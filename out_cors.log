@@ -1,0 +1,11 @@
+===== CORS 2026-10-07T17:11:31Z =====
+--- preflight OPTIONS ---
+HTTP/2 403 
+--- POST real com Origin ---
+--- headers resposta ---
+HTTP/2 403 
+content-type: text/html; charset=UTF-8
+x-content-type-options: nosniff
+--- corpo (400 bytes) ---
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=Edge"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="content-security-policy" content="default-src &#39;none&#39;; script-src &#39
+===== FIM =====
