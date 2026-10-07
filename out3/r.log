@@ -1,0 +1,23 @@
+===== TESTE 2026-10-07T17:13:33Z =====
+--- 1. skynetchat com UA de navegador ---
+  tentativa 1: HTTP 403  bytes=5749
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta http-equiv="Content-Type" content="text/htm
+  tentativa 2: HTTP 403  bytes=5749
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta http-equiv="Content-Type" content="text/htm
+
+--- 2. pollinations (alternativa, CORS?) ---
+  models: HTTP HTTP/2 200
+  CORS:
+access-control-allow-origin: *
+access-control-expose-headers: Payment-Required, Payment-Response, Link, X-Pollinations-Logo, X-Powered-By
+
+--- 3. POST chat pollinations ---
+  chat: HTTP/2 200
+  CORS:
+access-control-allow-origin: *
+access-control-allow-headers: Content-Type, X-Turnstile-Token, Payment-Signature, X-PAYMENT
+access-control-allow-methods: GET, POST, OPTIONS
+access-control-expose-headers: Link, X-Pollinations-Logo, X-Powered-By
+  corpo:
+{"id":"pllns_f1827065766dd3dd3d2c22b7ca6c66d9","choices":[{"index":0,"message":{"role":"assistant","content":"Ok.","reasoning":"We need to respond. The user said \"say ok\". They want us to say ok. There's no direct conflict with policy. Just say \"o
+===== FIM =====
