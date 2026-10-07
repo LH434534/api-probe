@@ -1,9 +1,12 @@
 name: cors
-on: [workflow_dispatch, push]
+on: [workflow_dispatch]
 jobs:
   c:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
+      - uses: actions/checkout@v4
       - name: testar CORS real
         run: |
           set +e
@@ -14,7 +17,7 @@ jobs:
             -H "Origin: https://lh434534.github.io" \
             -H "Access-Control-Request-Method: POST" \
             -H "Access-Control-Request-Headers: content-type" \
-            https://skynetchat.net/api/chat | grep -iE "^HTTP|access-control|vary" 
+            https://skynetchat.net/api/chat 2>&1 | grep -iE "^HTTP|access-control|vary"
           echo "--- POST real com Origin ---"
           curl -s -D /tmp/h.txt -o /tmp/b.txt --max-time 30 -X POST \
             -H "Content-Type: application/json" \
@@ -22,18 +25,21 @@ jobs:
             -H "Origin: https://lh434534.github.io" \
             -d '{"id":"cors-probe","trigger":"submit-message","messages":[{"role":"user","content":"diga ok"}]}' \
             https://skynetchat.net/api/chat
-          echo "--- headers de resposta ---"
-          grep -iE "^HTTP|access-control|content-type" /tmp/h.txt
-          echo "--- primeiros bytes ---"
+          echo "--- headers resposta ---"
+          grep -iE "^HTTP|access-control|content-type|transfer" /tmp/h.txt
+          echo "--- corpo (400 bytes) ---"
           head -c 400 /tmp/b.txt
           echo
           echo "===== FIM ====="
-          } > cors.log 2>&1
-          cat cors.log
-      - name: guardar
+          } > out_cors.log 2>&1
+          cat out_cors.log
+      - name: gravar log
         if: always()
         run: |
-          mkdir -p out && cp cors.log out/cors.log
-          git config user.name bot && git config user.email b@b.local
-          git add -f out && git diff --cached --quiet || git commit -m "cors"
-          git push 2>&1 | tail -1 || true
+          mkdir -p out
+          cp out_cors.log out/cors.log 2>/dev/null || true
+          git config user.name bot
+          git config user.email b@b.local
+          git add -f out out_cors.log
+          git commit -m "cors result" 2>&1 | tail -2
+          git push origin HEAD:${{ github.ref_name }} 2>&1 | tail -2
