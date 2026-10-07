@@ -1,0 +1,39 @@
+name: cors
+on: [workflow_dispatch, push]
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    steps:
+      - name: testar CORS real
+        run: |
+          set +e
+          {
+          echo "===== CORS $(date -u +%FT%TZ) ====="
+          echo "--- preflight OPTIONS ---"
+          curl -sI -X OPTIONS --max-time 25 \
+            -H "Origin: https://lh434534.github.io" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type" \
+            https://skynetchat.net/api/chat | grep -iE "^HTTP|access-control|vary" 
+          echo "--- POST real com Origin ---"
+          curl -s -D /tmp/h.txt -o /tmp/b.txt --max-time 30 -X POST \
+            -H "Content-Type: application/json" \
+            -H "Accept: text/event-stream" \
+            -H "Origin: https://lh434534.github.io" \
+            -d '{"id":"cors-probe","trigger":"submit-message","messages":[{"role":"user","content":"diga ok"}]}' \
+            https://skynetchat.net/api/chat
+          echo "--- headers de resposta ---"
+          grep -iE "^HTTP|access-control|content-type" /tmp/h.txt
+          echo "--- primeiros bytes ---"
+          head -c 400 /tmp/b.txt
+          echo
+          echo "===== FIM ====="
+          } > cors.log 2>&1
+          cat cors.log
+      - name: guardar
+        if: always()
+        run: |
+          mkdir -p out && cp cors.log out/cors.log
+          git config user.name bot && git config user.email b@b.local
+          git add -f out && git diff --cached --quiet || git commit -m "cors"
+          git push 2>&1 | tail -1 || true
