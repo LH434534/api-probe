@@ -1,0 +1,54 @@
+name: cors3
+on: [workflow_dispatch]
+jobs:
+  c:
+    runs-on: ubuntu-latest
+    permissions: {contents: write}
+    steps:
+      - uses: actions/checkout@v4
+      - name: teste
+        run: |
+          set +e
+          {
+          echo "===== TESTE $(date -u +%FT%TZ) ====="
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36'
+          echo "--- 1. skynetchat com UA de navegador ---"
+          for i in 1 2; do
+            code=$(curl -s -o /tmp/s$i.txt -w "%{http_code}" --max-time 30 -X POST \
+              -H "Content-Type: application/json" \
+              -H "Accept: text/event-stream" \
+              -H "Origin: https://lh434534.github.io" \
+              -H "Referer: https://skynetchat.net/" \
+              -H "User-Agent: $UA" \
+              -d '{"id":"p'$i'","trigger":"submit-message","messages":[{"role":"user","content":"diga ok"}]}' \
+              https://skynetchat.net/api/chat)
+            echo "  tentativa $i: HTTP $code  bytes=$(wc -c </tmp/s$i.txt)"
+            grep -iE "^access-control" /dev/null 2>/dev/null
+            head -c 120 /tmp/s$i.txt | tr -d '\n'; echo
+          done
+          echo
+          echo "--- 2. pollinations (alternativa, CORS?) ---"
+          curl -s -D /tmp/ph.txt -o /tmp/pb.txt --max-time 30 \
+            -H "Origin: https://lh434534.github.io" \
+            "https://text.pollinations.ai/openai/models" 
+          echo "  models: HTTP $(grep -oE 'HTTP/[0-9.]+ [0-9]+' /tmp/ph.txt | tail -1)"
+          echo "  CORS:"; grep -iE "access-control" /tmp/ph.txt || echo "    (nenhum header CORS)"
+          echo
+          echo "--- 3. POST chat pollinations ---"
+          curl -s -D /tmp/ph2.txt -o /tmp/pb2.txt --max-time 40 -X POST \
+            -H "Content-Type: application/json" \
+            -H "Origin: https://lh434534.github.io" \
+            -d '{"model":"openai","messages":[{"role":"user","content":"say ok"}],"stream":false}' \
+            "https://text.pollinations.ai/openai/chat/completions"
+          echo "  chat: $(grep -oE 'HTTP/[0-9.]+ [0-9]+' /tmp/ph2.txt | tail -1)"
+          echo "  CORS:"; grep -iE "access-control" /tmp/ph2.txt || echo "    (nenhum)"
+          echo "  corpo:"; head -c 250 /tmp/pb2.txt; echo
+          echo "===== FIM ====="
+          } > out3.log 2>&1
+          cat out3.log
+      - name: gravar
+        if: always()
+        run: |
+          mkdir -p out3 && cp out3.log out3/r.log
+          git config user.name bot && git config user.email b@b.local
+          git add -f out3 out3.log && git commit -m "t3" 2>&1|tail -1 && git push 2>&1|tail -1
