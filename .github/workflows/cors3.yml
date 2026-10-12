@@ -51,4 +51,10 @@ jobs:
         run: |
           mkdir -p out3 && cp out3.log out3/r.log
           git config user.name bot && git config user.email b@b.local
-          git add -f out3 out3.log && git commit -m "t3" 2>&1|tail -1 && git push 2>&1|tail -1
+          git add -f out3 out3.log
+          if git diff --cached --quiet; then
+            echo "no new CORS log to publish"
+          else
+            git commit -m "t3"
+            git push
+          fi

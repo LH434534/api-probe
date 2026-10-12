@@ -61,5 +61,9 @@ jobs:
           git config user.email probe@bot.local
           cp out/probe.txt probe.txt 2>/dev/null || true
           git add -A
-          git diff --cached --quiet || git commit -m "probe"
-          git push
+          if git diff --cached --quiet; then
+            echo "no new API probe result to publish"
+          else
+            git commit -m "probe"
+            git push
+          fi
